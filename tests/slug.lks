@@ -1,0 +1,17 @@
+use folgue02/text/slug::{slugify, fold};
+
+void testFold() {
+    assert fold('Año Café') == 'Ano Cafe';
+}
+
+void testSlugify() {
+    assert slugify('¡Hola, Mundo! 2024') == 'hola-mundo-2024';
+    assert slugify('  Hello   World  ') == 'hello-world';
+    assert slugify('Hello World', '_') == 'hello_world';
+    assert slugify('!!!') == '';
+}
+
+void testMaxLength() {
+    assert slugify('one two three', '-', 9) == 'one-two';
+    assert slugify('abcdefghij', '-', 4) == 'abcd';
+}

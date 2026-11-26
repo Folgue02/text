@@ -1,0 +1,60 @@
+//! Case conversions that the string methods don't have.
+
+const list<string> $smallWords = %w[a an and as at but by for in nor of on or the to vs via];
+
+/// Splits an identifier or a phrase into lower case words, at spaces,
+/// `_`, `-` and changes from lower to upper case.
+///
+/// $text: the identifier or phrase, i.e. `'parseHTTPHeader'` or `'user_name'`
+/// returns: the words in lower case, i.e. `['parse', 'http', 'header']`
+pub list<string> words(string $text) {
+    const $spaced = $text
+        .replaceMatches(%r"([a-z0-9])([A-Z])", '$1 $2')
+        .replaceMatches(%r"([A-Z]+)([A-Z][a-z])", '$1 $2')
+        .replaceMatches(%r"[_\-\s]+", ' ');
+    return $spaced.lower().words();
+}
+
+/// Title case like headlines: every word capitalized except small words
+/// (articles, short conjunctions and prepositions), unless they're first or last.
+///
+/// $text: the phrase
+/// returns: i.e. `'the lord of the rings'` is `'The Lord of the Rings'`
+pub string titleCase(string $text) {
+    const $all = $text.lower().words();
+    let $out = <string>[];
+    for ($i in 0..$all.length()) {
+        const $word = $all[$i] ?? '';
+        const $edge = $i == 0 || $i == $all.length() - 1;
+        if (!$edge && $smallWords.contains($word)) $out.push($word);
+        else $out.push($word.capitalize());
+    }
+    return $out.join(' ');
+}
+
+/// Sentence case: the first letter upper case, the rest lower case,
+/// with whitespace collapsed.
+///
+/// $text: the phrase
+/// returns: i.e. `'HELLO   World'` is `'Hello world'`
+pub string sentenceCase(string $text) = $text.collapseWhitespace().lower().capitalize();
+
+/// Converts between case styles by name.
+///
+/// $text: the identifier or phrase
+/// $style: one of `camel`, `pascal`, `snake`, `kebab`, `constant`, `title`, `sentence`
+/// returns: the converted text
+/// throws ValueError: when `$style` isn't one of those
+pub string toCase(string $text, string $style) {
+    const $plain = words($text).join(' ');
+    return switch ($style) {
+        case 'camel' -> $plain.camelCase();
+        case 'pascal' -> $plain.pascalCase();
+        case 'snake' -> $plain.snakeCase();
+        case 'kebab' -> $plain.kebabCase();
+        case 'constant' -> $plain.constantCase();
+        case 'title' -> titleCase($plain);
+        case 'sentence' -> sentenceCase($plain);
+        default -> throw ValueError(f"unknown case style '{$style}'");
+    };
+}

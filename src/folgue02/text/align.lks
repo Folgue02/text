@@ -1,0 +1,37 @@
+//! Fitting text to a width.
+
+/// Where text goes inside its width.
+pub enum Align { LEFT, RIGHT, CENTER; }
+
+/// Makes text exactly `$width` characters: padded when it's shorter,
+/// cut with `$ending` when it's longer.
+///
+/// $text: the text
+/// $width: the width, at least the length of `$ending`
+/// $align: where the text goes when it's padded
+/// $ending: what marks text that was cut
+/// returns: text of exactly `$width` characters
+pub string fit(string $text, number $width, Align $align = Align::LEFT, string $ending = '…') {
+    if ($text.length() > $width) return $text.truncate($width, $ending);
+    return switch ($align) {
+        case Align::LEFT -> $text.padEnd($width);
+        case Align::RIGHT -> $text.padStart($width);
+        case Align::CENTER -> $text.center($width);
+    };
+}
+
+/// Lays out rows as columns, each as wide as its widest cell,
+/// separated by `$gap`. Trailing spaces are removed from every line.
+///
+/// $rows: the rows, each a list of cells; short rows get empty cells
+/// $gap: what goes between columns
+/// returns: the lines joined with new lines
+pub string columns(list<list<string>> $rows, string $gap = '  ') {
+    const $count = $rows.map(($r) -> $r.length()).max() ?? 0;
+    let $widths = <number>[];
+    for ($c in 0..$count)
+        $widths.push($rows.map(($r) -> ($r[$c] ?? '').length()).max() ?? 0);
+    return $rows
+        .map(($r) -> (0..$count).map(($c) -> ($r[$c] ?? '').padEnd($widths[$c] ?? 0)).join($gap).trimEnd())
+        .join("\n");
+}

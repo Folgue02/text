@@ -1,0 +1,18 @@
+use folgue02/text/align::{fit, columns, Align};
+
+void testFit() {
+    assert fit('ab', 5) == 'ab   ';
+    assert fit('ab', 5, Align::RIGHT) == '   ab';
+    assert fit('ab', 6, Align::CENTER) == '  ab  ';
+    assert fit('abcdefgh', 5) == 'abcd…';
+    assert fit('abcdefgh', 5, Align::LEFT, '..') == 'abc..';
+}
+
+void testColumns() {
+    const $out = columns([['name', 'size'], ['a.txt', '1'], ['long.name']]);
+    assert $out == "name       size\na.txt      1\nlong.name";
+}
+
+void testColumnsEmpty() {
+    assert columns([]) == '';
+}

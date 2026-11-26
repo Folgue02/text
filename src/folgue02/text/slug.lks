@@ -1,0 +1,44 @@
+//! URL slugs.
+
+const map<string, string> $folds = {
+    'á' => 'a', 'à' => 'a', 'ä' => 'a', 'â' => 'a', 'ã' => 'a', 'å' => 'a',
+    'é' => 'e', 'è' => 'e', 'ë' => 'e', 'ê' => 'e',
+    'í' => 'i', 'ì' => 'i', 'ï' => 'i', 'î' => 'i',
+    'ó' => 'o', 'ò' => 'o', 'ö' => 'o', 'ô' => 'o', 'õ' => 'o', 'ø' => 'o',
+    'ú' => 'u', 'ù' => 'u', 'ü' => 'u', 'û' => 'u',
+    'ñ' => 'n', 'ç' => 'c', 'ß' => 'ss', 'æ' => 'ae', 'œ' => 'oe',
+};
+
+/// Replaces common accented Latin letters with plain ones.
+///
+/// $text: the text
+/// returns: i.e. `'Año Café'` is `'Ano Cafe'`
+pub string fold(string $text) {
+    return $text.chars().map(($c) {
+        const $plain = $folds[$c.lower()];
+        if ($plain == null) return $c;
+        return $c.upper?() ? $plain.upper() : $plain;
+    }).join('');
+}
+
+/// Turns a title into a slug: lower case, accents folded, and every run of
+/// other characters replaced by `$separator`.
+///
+/// $text: the title
+/// $separator: what goes between words
+/// $maxLength: when given, the slug is cut at a word boundary to fit
+/// returns: i.e. `'¡Hola, Mundo! 2024'` is `'hola-mundo-2024'`
+pub string slugify(string $text, string $separator = '-', ?number $maxLength = null) {
+    const $words = fold($text).lower().replaceMatches(%r"[^a-z0-9]+", ' ').words();
+    let $slug = $words.join($separator);
+    if ($maxLength != null && $slug.length() > $maxLength) {
+        let $cut = '';
+        for ($w in $words) {
+            const $next = $cut.empty?() ? $w : $cut + $separator + $w;
+            if ($next.length() > $maxLength) break;
+            $cut = $next;
+        }
+        $slug = $cut.empty?() ? $slug[0..$maxLength] : $cut;
+    }
+    return $slug;
+}

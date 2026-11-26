@@ -1,0 +1,76 @@
+//! Word wrapping.
+
+/// Wraps a paragraph to a width, with an indent for the first line and
+/// another one for the rest. Whitespace in the text is collapsed. A word
+/// longer than the width gets a line of its own.
+///
+/// $text: the paragraph
+/// $width: the longest a line may be, indent included
+/// $indent: what starts the first line
+/// $hanging: what starts every other line
+/// returns: the lines joined with new lines
+pub string wrap(string $text, number $width, string $indent = '', string $hanging = '') {
+    return lines($text, $width, $indent, $hanging).join("\n");
+}
+
+/// Like `wrap`, but gives back the lines.
+///
+/// $text: the paragraph
+/// $width: the longest a line may be, indent included
+/// $indent: what starts the first line
+/// $hanging: what starts every other line
+/// returns: the lines, without new lines
+pub list<string> lines(string $text, number $width, string $indent = '', string $hanging = '') {
+    let $out = <string>[];
+    let $line = $indent;
+    let $fresh = true;
+    for ($word in $text.words()) {
+        if ($fresh) {
+            $line += $word;
+            $fresh = false;
+        } else if ($line.length() + 1 + $word.length() <= $width) {
+            $line += ' ' + $word;
+        } else {
+            $out.push($line);
+            $line = $hanging + $word;
+        }
+    }
+    if (!$fresh) $out.push($line);
+    return $out;
+}
+
+/// Wraps a paragraph and spreads the spaces so every line but the last
+/// is exactly `$width` characters.
+///
+/// $text: the paragraph
+/// $width: the width of the lines
+/// returns: the lines joined with new lines
+pub string justify(string $text, number $width) {
+    const $all = lines($text, $width);
+    let $out = <string>[];
+    for ($i in 0..$all.length()) {
+        const $line = $all[$i] ?? '';
+        if ($i == $all.length() - 1) $out.push($line);
+        else $out.push(_spread($line, $width));
+    }
+    return $out.join("\n");
+}
+
+string _spread(string $line, number $width) {
+    const $parts = $line.words();
+    if ($parts.length() < 2) return $line;
+    const $gaps = $parts.length() - 1;
+    const $spaces = $width - $parts.map(($p) -> $p.length()).sum();
+    const $each = ($spaces / $gaps).floor();
+    let $extra = $spaces - $each * $gaps;
+    let $result = $parts[0] ?? '';
+    for ($p in $parts[1..]) {
+        let $gap = $each;
+        if ($extra > 0) {
+            $gap += 1;
+            $extra -= 1;
+        }
+        $result += ' '.repeat($gap) + $p;
+    }
+    return $result;
+}

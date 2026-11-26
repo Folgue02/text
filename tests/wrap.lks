@@ -1,0 +1,21 @@
+use folgue02/text/wrap;
+
+void testWrap() {
+    assert wrap::wrap('the quick brown fox jumps', 10) == "the quick\nbrown fox\njumps";
+}
+
+void testWrapIndent() {
+    assert wrap::wrap('one two three four', 9, '* ', '  ') == "* one two\n  three\n  four";
+}
+
+void testLongWord() {
+    assert wrap::lines('a supercalifragilistic b', 5).equals(['a', 'supercalifragilistic', 'b']);
+}
+
+void testEmpty() {
+    assert wrap::wrap('   ', 10) == '';
+}
+
+void testJustify() {
+    assert wrap::justify('aa b cc dd eee', 8) == "aa  b cc\ndd eee";
+}

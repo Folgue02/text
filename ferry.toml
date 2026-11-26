@@ -1,0 +1,7 @@
+[project]
+author = "folgue02"
+name = "text"
+version = "0.1.0"
+kind = "library"
+
+[dependencies]

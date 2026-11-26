@@ -1,0 +1,31 @@
+use folgue02/text/casing;
+use std/test;
+
+void testWords() {
+    assert casing::words('parseHTTPHeader').equals(['parse', 'http', 'header']);
+    assert casing::words('user_name-id  x').equals(['user', 'name', 'id', 'x']);
+    assert casing::words('').equals([]);
+}
+
+void testTitleCase() {
+    assert casing::titleCase('the lord of the rings') == 'The Lord of the Rings';
+    assert casing::titleCase('what it is for') == 'What It Is For';
+}
+
+void testSentenceCase() {
+    assert casing::sentenceCase('HELLO   World') == 'Hello world';
+}
+
+void testToCase() {
+    assert casing::toCase('parseHTTPHeader', 'snake') == 'parse_http_header';
+    assert casing::toCase('user_name', 'camel') == 'userName';
+    assert casing::toCase('user-name', 'pascal') == 'UserName';
+    assert casing::toCase('userName', 'kebab') == 'user-name';
+    assert casing::toCase('userName', 'constant') == 'USER_NAME';
+    assert casing::toCase('war_and_peace', 'title') == 'War and Peace';
+}
+
+void testUnknownStyle() {
+    const $e = test::throws(() -> casing::toCase('x', 'shouty'));
+    assert $e.typeName() == 'ValueError';
+}
